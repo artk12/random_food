@@ -10,7 +10,7 @@ class FoodSelectorScreen extends StatefulWidget {
 }
 
 class _FoodSelectorScreenState extends State<FoodSelectorScreen> {
-  String selectedFood = 'هنوز انتخاب نشده';
+  String selectedFood = 'افسانه عزیزم هنوز چیزی انتخاب نکردی';
   List<String> iftarHistory = [];
   List<String> sahariHistory = [];
   OverlayEntry? _loadingOverlay;
@@ -87,9 +87,8 @@ class _FoodSelectorScreenState extends State<FoodSelectorScreen> {
 
   bool isWeekend() {
     String today =
-        DateFormat('EEEE').format(DateTime.now().add(Duration(days: 1)));
-    print(today);
-    return today == 'thursday';
+        DateFormat('EEEE').format(DateTime.now());
+    return today == 'Thursday';
   }
 
   Future<void> showRandomFood(String mealType) async {
@@ -126,7 +125,7 @@ class _FoodSelectorScreenState extends State<FoodSelectorScreen> {
             SizedBox(height: 16),
             Material(
               child: Text(
-                'در حال انتخاب غذا...',
+                'عشقم صبر کن در حال انتخابم',
                 style: TextStyle(fontSize: 18, color: Colors.black),
               ),
             ),
