@@ -1,42 +1,42 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-name: Dart
+name: Flutter Deployment
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-      # Note: This workflow uses the latest stable version of the Dart SDK.
-      # You can specify other versions if desired, see documentation here:
-      # https://github.com/dart-lang/setup-dart/blob/main/README.md
-      # - uses: dart-lang/setup-dart@v1
-      - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'stable'
 
-      - name: Install dependencies
-        run: dart pub get
+      - name: Install Dependencies
+        run: flutter pub get
 
-      # Uncomment this step to verify the use of 'dart format' on each commit.
-      # - name: Verify formatting
-      #   run: dart format --output=none --set-exit-if-changed .
+      - name: Run Tests
+        run: flutter test
 
-      # Consider passing '--fatal-infos' for slightly stricter analysis.
-      - name: Analyze project source
-        run: dart analyze
+      - name: Decode Keystore File
+        run: echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > android/app/keystore.jks
 
-      # Your project will need to have tests in test/ and a dependency on
-      # package:test for this step to succeed. Note that Flutter projects will
-      # want to change this to 'flutter test'.
-      - name: Run tests
-        run: dart test
+      - name: Decode Keystore Credentials
+        run: |
+          echo "${{ secrets.KEYSTORE_ALIAS }}" | base64 --decode > keystore_alias.txt
+          echo "${{ secrets.KEYSTORE_PASSWORD }}" | base64 --decode > keystore_password.txt
+          echo "${{ secrets.KEY_PASSWORD }}" | base64 --decode > key_password.txt
+
+      - name: Build Signed APK
+        run: |
+          flutter build apk --release \
+            --dart-define=KEYSTORE_PATH=android/app/keystore.jks \
+            --dart-define=KEYSTORE_ALIAS=$(cat keystore_alias.txt) \
+            --dart-define=KEYSTORE_PASSWORD=$(cat keystore_password.txt) \
+            --dart-define=KEY_PASSWORD=$(cat key_password.txt)
